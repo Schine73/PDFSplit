@@ -1,0 +1,8 @@
+<ul>
+    {% for image in images %}
+        <li class="thumbnail" id="{{ loop.index }}">
+            <p>{{ loop.index }}/{{ images|length }}</p>
+            <img src='data:image/jpg;base64,{{ image }}' alt="page{{ loop.index }}">
+        </li>
+    {% endfor %}
+</ul>
