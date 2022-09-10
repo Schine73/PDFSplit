@@ -2,7 +2,7 @@ from flask import Flask, flash, request, redirect, render_template, session, sen
 from pdf2image import convert_from_path
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
-from os import listdir, remove, path, environ
+from os import listdir, remove, path, environ, mkdir
 import base64
 from io import BytesIO
 
@@ -36,6 +36,10 @@ def index():
                 
                 # check that filetype is pdf
                 if file.filename.rsplit('.')[-1].lower() in ['pdf']:
+                    
+                    # if upload path does not exist, then create it
+                    if not path.exists(app.config["UPLOAD_FOLDER"]):
+                        mkdir(app.config["UPLOAD_FOLDER"])
                     
                     # loop through upload folder and delete every file except latest 5 (ie. only keep last 5 elements in list)
                     files = listdir(app.config["UPLOAD_FOLDER"])
