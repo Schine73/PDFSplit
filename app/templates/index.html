@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PDFSplit</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+
+<body class="bg-dark" style="height: 100vh;">
+
+    <div class="h-100 d-flex flex-column align-items-center justify-content-center" role="main">
+
+        <div id="drop-zone" class="p-2 position-relative rounded" style="background-color: #22ba73;">
+                <button type="button" class=" py-5 btn btn-success btn-lg stretched-link" onclick="$('#file-selector').click();" style="border: 2px dashed lightgrey !important;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16">
+                        <path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z"></path>
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"></path>
+                    </svg>
+                    <h3 class="d-inline-block">drag file here or click to select file</h3>
+                    <div class="spinner-border text-light" id="file-upload-spinner" style="display: none;"></div>
+                </button>
+                <input type="file" name="file" id="file-selector" style="display: none;">
+        </div>
+
+        <div id="toolbar" class="navbar my-3 justify-content-center w-75 py-2" style="display: none;">
+            <ul class="nav nav-pills">
+
+                <!-- upload new file -->
+                <li class="nav-item">   
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="new-file" data-bs-toggle="tooltip" title="upload new file">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16">
+                            <path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z"></path>
+                            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"></path>
+                        </svg>
+                    </button>
+                </li>
+
+                <!-- select / unselect all -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="select-all" data-bs-toggle="tooltip" title="select/unselect all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                            <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                            <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
+                        </svg></i>
+                    </button>
+                </li>
+                
+                <!-- invert selection -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="invert-selection" data-bs-toggle="tooltip" title="invert selection">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                        </svg>
+                    </button>
+                </li>
+
+                <!-- hide -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="hide-selected" data-bs-toggle="tooltip" title="hide">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
+                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+                            <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
+                        </svg>
+                    </button>
+                </li>
+
+                <!-- undo hide -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="undo-hide" data-bs-toggle="tooltip" title="undo hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                            <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                        </svg>
+                    </button>
+                </li>
+                
+                <!-- show all -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="show-all" data-bs-toggle="tooltip" title="show all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                    </button>
+                </li>
+                
+                <!-- extract pages -->
+                <li class="nav-item">
+                    <button class="mx-3 btn btn-outline-primary btn-lg" id="extract-pages"><div class="spinner-border text-light" id="extract-pages-spinner" style="display: none;"></div>Extract Pages</button>
+                </li>
+            </ul>
+        </div>
+
+
+        <div id="page-list" class="w-75 overflow-auto" style="display: none; height: 100%;">
+
+        </div>
+
+
+
+        <div class="modal" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h4 class="modal-title">Modal Heading</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Filename" id="file-name">
+                        <span class="input-group-text">.pdf</span>
+                        </div>
+                </div>
+            
+                <div class="modal-footer">
+                    <a class="btn btn-primary" id="modal-save-file">Save File</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modal-cancel">Cancel</button>
+                </div>
+            
+                </div>
+            </div>
+        </div>
+
+        <footer class="py-2 mt-2 w-75" style="display: none;">
+            <div class="d-flex justify-content-center ">
+                <!-- hide extracted -->
+                <div class="mx-3 form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="hide-extracted" id="hide-extracted" checked>
+                    <label class="form-check-label text-light" for="hide-extracted">Hide Extracted Pages</label>
+                </div>
+            
+                <!-- rename file -->    
+                <div class="mx-3 form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="change-filename" id="change-filename">
+                    <label class="form-check-label text-light" for="change-filename">Open File Name Promt</label>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
