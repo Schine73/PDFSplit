@@ -8,8 +8,11 @@ var hidden = [];
 
 const btnExtractPages = document.getElementById('extract-pages');
 const btnHideSelected = document.getElementById('hide-selected');
-const btnUnhideAll = document.getElementById('unhide-all');
+const btnShowAll = document.getElementById('show-all');
 const btnUndoHide = document.getElementById('undo-hide');
+const btnSelectAll = document.getElementById('select-all');
+const btnInvertSelection = document.getElementById('invert-selection');
+const btnNewFile = document.getElementById('new-file');
 
 const chkHideExtracted = document.getElementById('hide-extracted');
 const chkChangeFilename = document.getElementById('change-filename');
@@ -25,6 +28,14 @@ const txtModalFileName = document.getElementById('file-name');
 const myModal = document.getElementById('myModal');
 
 const divDropZone = document.getElementById('drop-zone');
+
+
+
+// enable bootstrap tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
 
 
 // ----- events -----
@@ -63,11 +74,16 @@ txtFileSelector.onchange = function(event) {
 // selecting and deselecting pages
 $(document).on("click", ".thumbnail", function(){
     $(this).toggleClass("selected");
+    $(this).children().toggleClass("bg-secondary");
+    $(this).children().toggleClass("bg-success");
 });
 
 
 // extract pages button
 btnExtractPages.onclick = function() {
+
+    $('#extract-pages-spinner').show();
+
     // temporary variable for storing page numbers
     var pages = [];
 
@@ -105,9 +121,6 @@ btnExtractPages.onclick = function() {
 
             // download file
             download(blob);
-
-            // hide extracted pages
-            if (chkHideExtracted.checked) { hideSelected(); }
         },
         error: function (request, status, error) {
             console.log('error while requesting file');
@@ -130,10 +143,37 @@ btnUndoHide.onclick = function() {
 
 
 // unhide all hidden pages button
-btnUnhideAll.onclick = function() {
+btnShowAll.onclick = function() {
     while (hidden.length > 0) {
         undoHidden();
     }
+}
+
+
+// select or deselect all thumbnails
+btnSelectAll.onclick = function() {
+    // if there are thumbnails, that have not been selected, then select all unselected ones
+    if (document.querySelectorAll('.thumbnail:not(.selected)').length) {
+        document.querySelectorAll('.thumbnail:not(.selected)').forEach(function(item) {
+            item.click();
+        });
+    }
+
+    // else unselect all
+    else {
+        document.querySelectorAll('.selected').forEach(function(item) {
+            item.click();
+        });
+    }
+}
+
+
+// invert current selection
+btnInvertSelection.onclick = function() {
+    // click on all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(function(item) {
+        item.click();
+    });
 }
 
 
@@ -149,7 +189,25 @@ txtModalFileName.oninput = function() {
 
 // save file button
 btnModalSaveFile.onclick = function() {
+    // hide extracted pages
+    if (chkHideExtracted.checked) { hideSelected(); }
+
+    // hide modal and reset button attributes
     $('#myModal').modal('hide');
+    btnModalSaveFile.removeAttribute('href');
+    btnModalSaveFile.removeAttribute('download');
+}
+
+
+// new file button
+btnNewFile.onclick = function() {
+    $('#page-list').html('');
+    $('#page-list').hide();
+    $('#toolbar').hide();
+    $('footer').hide();
+    $('#drop-zone').show();
+    hidden = [];
+    txtModalFileName.value = '';
 }
 
 
@@ -183,23 +241,45 @@ document.onkeydown = function(event) {
  * @param {*} file The file to be downloaded
  */
  function download(file) {
+    // download through file naming dialog:
     if (chkChangeFilename.checked) {
+        // open modal and attach file to saveFile button
         btnModalSaveFile.setAttribute('href', URL.createObjectURL(file));
         btnModalSaveFile.setAttribute('download', 'extracted.pdf');
         $('#myModal').modal('show');
-        txtModalFileName.value = "";
+        
+        
+        // in case there is alredy text in textbox, move cursor to end
+        txtModalFileName.setSelectionRange(txtModalFileName.value.length, txtModalFileName.value.length);
+        // select textbox
         txtModalFileName.focus();
-    } else {
+    }
+    
+    // download straight away
+    else {
+        // create a hidden link element containing the file
         var element = document.createElement('a');
         element.style.display = 'none';
         element.setAttribute('href', URL.createObjectURL(file));
         element.setAttribute('download', 'extracted.pdf');
 
+        // append link element to  body
         document.body.appendChild(element);
+
+        // click link to download file
         element.click();
+
+        // remove link element
         document.body.removeChild(element);
+
+        // hide extracted pages
+        if (chkHideExtracted.checked) { hideSelected(); }
     }
+
+    // hide download spinner
+    $('#extract-pages-spinner').hide();
 }
+
 
 
 /**
@@ -211,6 +291,7 @@ document.onkeydown = function(event) {
  */
 function upload(file) {
     if (file.type == 'application/pdf') {
+        $('#file-upload-spinner').show();
         const formData = new FormData();
         console.log('filename = ' + file.name);
         formData.append('file', file);
@@ -224,8 +305,14 @@ function upload(file) {
             type: 'post',
             success: function(response){
                 console.log('file POST successful');
-                $("#drop-zone").hide();
-                $("#page-list").load("/images");
+                $("#page-list").load("/images", function() {
+                    // after images are loaded, drop-zone is hidden
+                    $("#drop-zone").hide();
+                    $('#file-upload-spinner').hide();
+                    $('#page-list').show();
+                    $('#toolbar').show();
+                    $('footer').show();
+                });
             },
             error: function (request, status, error) {
                 console.log(request.responseText);

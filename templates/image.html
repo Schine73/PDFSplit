@@ -1,8 +1,29 @@
-<ul>
-    {% for image in images %}
-        <li class="thumbnail" id="{{ loop.index }}">
-            <p>{{ loop.index }}/{{ images|length }}</p>
-            <img src='data:image/jpg;base64,{{ image }}' alt="page{{ loop.index }}">
-        </li>
-    {% endfor %}
-</ul>
+<div class="album container">
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+
+            {% for image in images %}
+                <div class="col thumbnail" id="{{ loop.index }}">
+                    <div class="p-2 bg-secondary">
+                        <img class="card-img-bottom" src='data:image/jpg;base64,{{ image }}' alt="page{{ loop.index }}">
+                        <div class="card-body text-center mt-2">
+                            <h6>{{ loop.index }}/{{ images|length }}</h6>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div> 
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
