@@ -1,6 +1,4 @@
 # PDFSplit
-tool for selecting and extracting one or multiple pages from a pdf document
-
 This is a simple web-tool for selecting and extracting specific pages from a PDF file.
 
 The tool consists of a python backend using Flask.
