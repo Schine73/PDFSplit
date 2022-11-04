@@ -194,8 +194,6 @@ btnModalSaveFile.onclick = function() {
 
     // hide modal and reset button attributes
     $('#myModal').modal('hide');
-    btnModalSaveFile.removeAttribute('href');
-    btnModalSaveFile.removeAttribute('download');
 }
 
 
@@ -243,14 +241,18 @@ document.onkeydown = function(event) {
  function download(file) {
     // download through file naming dialog:
     if (chkChangeFilename.checked) {
+        // remove previouse download link from saveFile button
+        btnModalSaveFile.removeAttribute('href');
+        btnModalSaveFile.removeAttribute('download');
+
         // open modal and attach file to saveFile button
+        $('#myModal').modal('show');
         btnModalSaveFile.setAttribute('href', URL.createObjectURL(file));
         btnModalSaveFile.setAttribute('download', 'extracted.pdf');
-        $('#myModal').modal('show');
-        
         
         // in case there is alredy text in textbox, move cursor to end
         txtModalFileName.setSelectionRange(txtModalFileName.value.length, txtModalFileName.value.length);
+
         // select textbox
         txtModalFileName.focus();
     }
