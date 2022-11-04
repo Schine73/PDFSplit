@@ -81,9 +81,6 @@ $(document).on("click", ".thumbnail", function(){
 
 // extract pages button
 btnExtractPages.onclick = function() {
-
-    $('#extract-pages-spinner').show();
-
     // temporary variable for storing page numbers
     var pages = [];
 
@@ -93,40 +90,46 @@ btnExtractPages.onclick = function() {
         pages.push(item.id);
     });
 
-    // querry string for request
-    var dataString = "";
+    if (pages.length > 0) {
+        $('#extract-pages-spinner').show();
 
-    // build querry string from list of pages
-    for (i in pages) {
-        if (i==0) {
-            dataString = dataString + "page=" + pages[i];
-        } else {
-            dataString = dataString + "&page=" + pages[i];
+        // querry string for request
+        var dataString = "";
+
+        // build querry string from list of pages
+        for (i in pages) {
+            if (i==0) {
+                dataString = dataString + "page=" + pages[i];
+            } else {
+                dataString = dataString + "&page=" + pages[i];
+            }
         }
+
+        console.log('requesting file from Server');
+
+        // make GET request for pdf file of extracted pages
+        $.ajax({
+            url: "/download",
+            type: "GET",
+            data: dataString,   // pass querry string
+            xhrFields: {responseType: 'blob'},  // to avoid binary data being mangled on charset conversion
+            success: function(data) {
+                console.log('file request successful')
+
+                // convert file response to blob
+                var blob = new Blob([data], { type: "application/octetstream" });
+
+                // download file
+                download(blob);
+            },
+            error: function (request, status, error) {
+                console.log('error while requesting file');
+                console.log(request.responseText);
+            }
+        });
+    } else {
+        console.log('no pages have been selected');
     }
-
-    console.log('requesting file from Server');
-
-    // make GET request for pdf file of extracted pages
-    $.ajax({
-        url: "/download",
-        type: "GET",
-        data: dataString,   // pass querry string
-        xhrFields: {responseType: 'blob'},  // to avoid binary data being mangled on charset conversion
-        success: function(data) {
-            console.log('file request successful')
-
-            // convert file response to blob
-            var blob = new Blob([data], { type: "application/octetstream" });
-
-            // download file
-            download(blob);
-        },
-        error: function (request, status, error) {
-            console.log('error while requesting file');
-            console.log(request.responseText);
-        }
-    });
 };
 
 
